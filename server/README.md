@@ -1,197 +1,188 @@
-# VulnWatchdog Backend
+# 🛡️ VulnWatchdog Backend
 
-A comprehensive REST API backend for automated dependency vulnerability monitoring, built with Node.js, Express, PostgreSQL, and Prisma ORM.
+A production-ready vulnerability monitoring and alerting system built with Node.js, Express.js, PostgreSQL, and Prisma ORM.
+
+## 🚀 Features
+
+- **Vulnerability Scanning**: Automated CVE detection from dependency files
+- **Real-time Notifications**: Server-Sent Events (SSE) for instant updates
+- **Email Alerts**: Configurable email notifications with Gmail/SMTP support
+- **User Management**: Role-based access control (RBAC)
+- **Project Collaboration**: Team-based project management
+- **Admin Dashboard**: System-wide analytics and monitoring
+- **API Documentation**: Swagger/OpenAPI integration
+
+## 🏗️ Architecture
+
+### Tech Stack
+- **Runtime**: Node.js 18+
+- **Framework**: Express.js
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT (JSON Web Tokens)
+- **File Upload**: Multer
+- **Real-time**: Server-Sent Events (SSE)
+- **Email**: Nodemailer with SMTP
+- **Documentation**: Swagger/OpenAPI
+
+### Project Structure
+```
+server/
+├── config/           # Configuration files
+├── controllers/      # Request handlers
+├── middlewares/      # Custom middleware
+├── routes/          # API route definitions
+├── services/        # Business logic
+├── utils/           # Utility functions
+├── jobs/            # Background tasks
+├── prisma/          # Database schema
+└── uploads/         # File uploads (temporary)
+```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+
 - PostgreSQL database
-- npm or yarn
+- Gmail account (for email notifications)
 
 ### Installation
 
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd vulnwatchdog/server
-```
+1. **Clone and install dependencies**
+   ```bash
+   cd server
+   npm install
+   ```
 
-2. **Install dependencies**
-```bash
-npm install
-```
+2. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
 
-3. **Set up environment variables**
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
+3. **Set up database**
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev
+   ```
 
-4. **Set up the database**
-```bash
-# Generate Prisma client
-npm run db:generate
+4. **Start the server**
+   ```bash
+   npm run dev    # Development
+   npm start      # Production
+   ```
 
-# Run database migrations
-npm run db:migrate
-```
+## 📡 API Endpoints
 
-5. **Start the server**
-```bash
-# Development mode
-npm run dev
+### Base URL: `http://localhost:5000/api`
 
-# Production mode
-npm start
-```
+### Authentication
+- `POST /auth/register` - Register user
+- `POST /auth/login` - Login user
+- `POST /auth/logout` - Logout user
+- `POST /auth/forgot` - Request password reset
 
-The API will be available at `http://localhost:5000`
+### User Management
+- `GET /user/profile` - Get user profile
+- `PUT /user/profile` - Update user profile
 
-## 📚 API Documentation
+### Projects
+- `POST /project` - Create project
+- `GET /project` - List user projects
+- `GET /project/:id` - Get project details
+- `POST /project/:id/collaborator` - Add collaborator
+- `GET /project/:id/export` - Export project report
 
-Interactive API documentation is available at:
-```
-http://localhost:5000/api/docs
-```
+### Vulnerability Scanning
+- `POST /scan` - Upload file and scan
+- `GET /scan/:projectId` - Get scan results
+- `GET /scan/history/:projectId` - Get scan history
 
-## 🔧 Environment Variables
+### Notifications
+- `GET /notifications` - List notifications
+- `POST /notifications/read` - Mark as read
+- `POST /notifications/read-all` - Mark all as read
+- `GET /notifications/unread-count` - Get unread count
+- `GET /notifications/stream` - Real-time SSE stream
 
-Create a `.env` file in the server directory:
+### Alerts
+- `POST /alerts/config` - Set alert configuration
+- `POST /alerts/test` - Send test alert
 
-```bash
+### Admin (Admin role required)
+- `GET /admin/users` - List all users
+- `GET /admin/projects` - List all projects
+- `GET /admin/logs` - Get system logs
+
+### System
+- `GET /health` - Health check
+- `GET /api/health` - API health check
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```env
 # Database
 DATABASE_URL=postgresql://user:password@host:port/database
 
-# JWT Authentication
-JWT_SECRET=your_jwt_secret_key
+# JWT
+JWT_SECRET=your-super-secret-jwt-key
 
-# Email Configuration (for alerts)
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_password
+# Email (Gmail)
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-specific-password
+EMAIL_FROM=your-email@gmail.com
 
-# External APIs
-SNYK_TOKEN=your_snyk_api_token
+# Email (SMTP)
+SMTP_HOST=smtp.your-provider.com
+SMTP_PORT=587
+SMTP_USER=your-email@domain.com
+SMTP_PASS=your-password
 
-# Server Configuration
+# Optional
+NODE_ENV=production
 PORT=5000
-HOST=localhost
 ```
 
-## 🏗️ Project Structure
+### Email Setup
 
-```
-server/
-├── config/           # Database and environment configuration
-├── controllers/      # Request handlers
-├── middlewares/      # Authentication, authorization, error handling
-├── routes/          # API route definitions
-├── services/        # Business logic
-├── utils/           # Utility functions
-├── jobs/            # Background job schedulers
-├── prisma/          # Database schema and migrations
-├── uploads/         # File upload storage
-├── app.js           # Express app configuration
-├── server.js        # Server entry point
-└── package.json     # Dependencies
-```
-
-## 🔐 Authentication
-
-The API uses JWT (JSON Web Tokens) for authentication:
-
-1. **Register**: `POST /api/auth/register`
-2. **Login**: `POST /api/auth/login` → Returns JWT token
-3. **Use Token**: Include in Authorization header: `Bearer <token>`
-
-### User Roles
-- **user**: Regular user with project management and scanning capabilities
-- **admin**: Full system access including user management and audit logs
+1. **Enable 2-Factor Authentication** on your Gmail account
+2. **Generate App Password**:
+   - Go to Google Account Settings → Security
+   - Under "2-Step Verification" → "App passwords"
+   - Select "Mail" and generate password
+3. **Configure environment variables** with the generated password
 
 ## 📊 Database Schema
 
-The application uses PostgreSQL with Prisma ORM. Key models include:
-
+### Core Models
 - **User**: Authentication and profile information
-- **Project**: User projects and metadata
-- **Dependency**: Package dependencies with versions
-- **Issue**: Vulnerability information linked to dependencies
-- **Notification**: In-app notifications for users
-- **AuditLog**: System audit trail for admin actions
+- **Project**: User projects with dependencies
+- **Dependency**: Software packages with versions
+- **Issue**: Vulnerability details and CVE information
+- **Notification**: User notifications and alerts
+- **Collaborator**: Project team members
+- **AuditLog**: System activity tracking
 
-## 🔍 Supported File Types
+## ⚡ Real-time Features
 
-The scanning system supports multiple dependency file formats:
-
-- `package.json` (Node.js)
-- `requirements.txt` (Python)
-- `pom.xml` (Java/Maven)
-- `Gemfile` (Ruby)
-- `composer.json` (PHP)
-- `go.mod` (Go)
-
-## 🚀 Available Scripts
-
-```bash
-# Start the server
-npm start
-
-# Development mode with auto-reload
-npm run dev
-
-# Database operations
-npm run db:migrate    # Run database migrations
-npm run db:generate   # Generate Prisma client
-npm run db:studio     # Open Prisma Studio
-
-# Testing
-npm test
-```
-
-## 🔒 Security Features
-
-- JWT-based authentication
-- Password hashing with bcrypt
-- Rate limiting on API endpoints
-- Input validation and sanitization
-- CORS configuration
-- Helmet security headers
-- Role-based access control (RBAC)
-- Audit logging for admin actions
-
-## 📈 Performance
-
-- Database connection pooling
-- File upload streaming
-- Background job processing
-- Caching for scan results
-- Optimized database queries
-
-## 🐛 Error Handling
-
-All API endpoints return consistent error responses:
+### Server-Sent Events (SSE)
+Connect to `/api/notifications/stream` for real-time updates:
 
 ```javascript
-{
-  "error": "Error message",
-  "status": 400
-}
+const eventSource = new EventSource('/api/notifications/stream', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  // Handle real-time updates
+};
 ```
 
-Common HTTP status codes:
-- `200`: Success
-- `201`: Created
-- `400`: Bad Request
-- `401`: Unauthorized
-- `403`: Forbidden
-- `404`: Not Found
-- `409`: Conflict (e.g., user already exists)
-- `500`: Internal Server Error
+## 🚀 Production Deployment
 
-## 🚀 Deployment
-
-### Docker Deployment
-
+### Docker
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -203,29 +194,75 @@ EXPOSE 5000
 CMD ["npm", "start"]
 ```
 
-### Production Setup
+### PM2
+```javascript
+// ecosystem.config.js
+module.exports = {
+  apps: [{
+    name: 'vulnwatchdog-backend',
+    script: 'server.js',
+    instances: 'max',
+    exec_mode: 'cluster',
+    env: { NODE_ENV: 'production', PORT: 5000 }
+  }]
+};
+```
 
-1. Set up PostgreSQL database
-2. Configure environment variables
-3. Run database migrations: `npm run db:migrate`
-4. Start server: `npm start`
+## 📚 Documentation
 
-## 🤝 Contributing
+- **API Documentation**: `http://localhost:5000/api/docs`
+- **Backend Guide**: See `../backend.md` for comprehensive API documentation
+- **Email Configuration**: See `PRODUCTION_EMAIL_CONFIG.md`
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+## 🧪 Testing
+
+### Health Checks
+```bash
+curl http://localhost:5000/health
+curl http://localhost:5000/api/health
+```
+
+### API Testing
+```bash
+# Test all endpoints
+node testapi.js
+```
+
+## 🔒 Security Features
+
+- **JWT Authentication**: Secure token-based authentication
+- **Role-based Access Control**: User and admin roles
+- **Rate Limiting**: Protection against abuse
+- **Input Validation**: All inputs validated and sanitized
+- **CORS Protection**: Configurable cross-origin requests
+- **Security Headers**: Helmet.js for HTTP security headers
+
+## 📈 Monitoring
+
+### Logs
+- Application logs in `logs/` directory
+- Error tracking and debugging
+- Performance monitoring
+
+### Metrics
+- API response times
+- Database query performance
+- Email delivery rates
+- User activity tracking
+
+## 🆘 Support
+
+For issues:
+1. Check application logs
+2. Verify environment variables
+3. Test database connectivity
+4. Check email configuration
+5. Review API documentation
 
 ## 📄 License
 
 This project is licensed under the MIT License.
 
-## 📞 Support
-
-For questions or issues, please open an issue in the repository or contact the maintainer.
-
 ---
 
-For detailed API documentation and frontend integration guide, see `backend.md`. 
+**VulnWatchdog Backend is production-ready and fully documented!** 🎉 

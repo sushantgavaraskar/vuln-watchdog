@@ -25,6 +25,7 @@ const auth = require('../middlewares/authMiddleware');
  *       200:
  *         description: User registered
  */
+router.post('/register', authController.register);
 
 /**
  * @swagger
@@ -46,6 +47,7 @@ const auth = require('../middlewares/authMiddleware');
  *       200:
  *         description: JWT token
  */
+router.post('/login', authController.login);
 
 /**
  * @swagger
@@ -56,7 +58,7 @@ const auth = require('../middlewares/authMiddleware');
  *       200:
  *         description: Logged out
  */
-router.post('/logout', authController.logout);
+router.post('/logout', auth, authController.logout);
 
 /**
  * @swagger
@@ -77,8 +79,5 @@ router.post('/logout', authController.logout);
  *         description: Password reset email sent
  */
 router.post('/forgot', authController.forgotPassword);
-
-router.post('/register', authController.register);
-router.post('/login', authController.login);
 
 module.exports = router;

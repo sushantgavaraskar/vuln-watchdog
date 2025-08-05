@@ -18,8 +18,18 @@ exports.setAlertConfig = async (req, res) => {
 exports.sendTestAlert = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    await emailService.sendAlert(user, { subject: 'Test Alert', text: 'This is a test alert.' });
-    res.json({ status: 'Test alert sent' });
+    const result = await emailService.sendAlert(user, { subject: 'Test Alert', text: 'This is a test alert.' });
+    
+    if (result.success) {
+      res.json({ status: 'Test alert sent successfully' });
+    } else {
+      // Don't fail the test if email is not configured
+      res.json({ 
+        status: 'Test alert processed', 
+        message: result.message,
+        note: 'Email not sent due to configuration issues'
+      });
+    }
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

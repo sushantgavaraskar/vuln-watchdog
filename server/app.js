@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const errorHandler = require('./middlewares/errorHandler');
+const { apiLimiter, authLimiter, uploadLimiter } = require('./middlewares/rateLimiter');
+const logger = require('./utils/logger');
 const dailyScan = require('./jobs/dailyScan');
 dailyScan();
 const alertScheduler = require('./jobs/alertScheduler');
@@ -28,9 +30,21 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 dotenv.config();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
+// Security middleware
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Logging middleware
+app.use(logger.logRequest);
+
+// Rate limiting
+app.use('/api/auth', authLimiter);
+app.use('/api/scan', uploadLimiter);
+app.use('/api', apiLimiter);
+
+// Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/project', require('./routes/project'));
@@ -40,6 +54,17 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// API health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Error handling
 app.use(errorHandler);
 
 module.exports = app;

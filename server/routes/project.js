@@ -3,7 +3,39 @@ const router = express.Router();
 const projectController = require('../controllers/projectController');
 const auth = require('../middlewares/authMiddleware');
 
+/**
+ * @swagger
+ * /api/project:
+ *   post:
+ *     summary: Create a new project
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               repositoryUrl:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Project created
+ */
 router.post('/', auth, projectController.createProject);
+
+/**
+ * @swagger
+ * /api/project:
+ *   get:
+ *     summary: Get user's projects
+ *     responses:
+ *       200:
+ *         description: List of user's projects
+ */
 router.get('/', auth, projectController.getProjects);
 
 /**

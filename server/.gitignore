@@ -161,4 +161,38 @@ build/
 *.tmp
 *.temp
 temp/
-tmp/ 
+tmp/
+
+# Test files
+test*.js
+debug*.js
+apiTest.js
+test-fixes.js
+test-upload.js
+test-email-config.js
+
+# Documentation files (except README.md)
+*.md
+!README.md
+
+# Production files
+PRODUCTION_*.md
+WEBSOCKET_*.md
+API_ROUTES_*.md
+PRODUCTION_FILE_UPLOAD.md
+
+# Backup files
+*.bak
+*.backup
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+
+# Docker
+.dockerignore
+Dockerfile.prod
+
+# PM2
+.pm2/ 

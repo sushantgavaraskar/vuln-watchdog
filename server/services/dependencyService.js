@@ -2,7 +2,7 @@
 exports.parseFile = async (file) => {
   // Already handled in fileParser
 };
-exports.classifyRisks = async (deps) => {
+exports.classifyRisks = (deps) => {
   return deps.map(dep => {
     let risk = 'secure';
     if (dep.issues.some(i => i.severity === 'CRITICAL')) risk = 'critical';

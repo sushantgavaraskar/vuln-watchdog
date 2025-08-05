@@ -1,4 +1,5 @@
 const authService = require('../services/authService');
+const prisma = require('../config/db');
 
 exports.register = async (req, res) => {
   try {
@@ -30,7 +31,7 @@ exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     // Find user
-    const user = await require('../config/db').user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.json({ status: 'If that email exists, a reset link will be sent.' });
     // TODO: Generate reset token, save to DB, send email
     // For now, just mock

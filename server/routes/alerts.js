@@ -32,12 +32,12 @@ router.post('/config', auth, alertController.setAlertConfig);
 /**
  * @swagger
  * /api/alerts/test:
- *   get:
+ *   post:
  *     summary: Send test alert
  *     responses:
  *       200:
  *         description: Test alert sent
  */
-router.get('/test', auth, alertController.sendTestAlert);
+router.post('/test', auth, alertController.sendTestAlert);
 
 module.exports = router;

@@ -2,6 +2,7 @@ const prisma = require('../config/db');
 const fileParser = require('../utils/fileParser');
 const cveFetcher = require('../utils/cveFetcher');
 const dependencyService = require('../services/dependencyService');
+const NotificationService = require('../services/notificationService');
 const { cleanupFile } = require('../utils/uploadConfig');
 const fs = require('fs');
 
@@ -95,15 +96,27 @@ exports.initiateScan = async (req, res) => {
       sum + (result.vulnerabilities ? result.vulnerabilities.filter(v => v.severity === 'CRITICAL').length : 0), 0
     );
 
+    const scanResults = {
+      totalDependencies,
+      totalVulnerabilities,
+      criticalVulnerabilities,
+      scanDate: new Date().toISOString()
+    };
+
+    // Create notification for scan completion
+    try {
+      await NotificationService.createScanCompleteNotification(userId, Number(projectId), {
+        summary: scanResults
+      });
+    } catch (notificationError) {
+      console.error('Error creating scan notification:', notificationError);
+      // Don't fail the scan if notification fails
+    }
+
     res.json({ 
       status: 'Scan complete', 
       results,
-      summary: {
-        totalDependencies,
-        totalVulnerabilities,
-        criticalVulnerabilities,
-        scanDate: new Date().toISOString()
-      }
+      summary: scanResults
     });
 
   } catch (error) {
@@ -161,29 +174,38 @@ exports.getScanHistory = async (req, res) => {
     if (!project) {
       return res.status(403).json({ error: 'Project not found or access denied' });
     }
-
+    
     const deps = await prisma.dependency.findMany({ 
       where: { projectId: Number(projectId) }, 
       include: { issues: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { id: 'desc' }
     });
 
-    // Group by scan date (for now, using dependency creation date)
+    // Group by scan date (using current date since dependency doesn't have createdAt)
     const history = deps.map(dep => ({
       id: dep.id,
       dependencyName: dep.name,
       dependencyVersion: dep.version,
-      scanDate: dep.createdAt,
+      scanDate: new Date().toISOString(), // Use current date as scan date
       vulnerabilityCount: dep.issues.length,
       criticalCount: dep.issues.filter(i => i.severity === 'CRITICAL').length,
       highCount: dep.issues.filter(i => i.severity === 'HIGH').length,
       mediumCount: dep.issues.filter(i => i.severity === 'MEDIUM').length,
       lowCount: dep.issues.filter(i => i.severity === 'LOW').length
     }));
-
-    res.json({ history });
+    
+    // Always return a valid response, even if empty
+    res.json({ 
+      history: history,
+      totalScans: history.length,
+      projectId: Number(projectId)
+    });
   } catch (error) {
     console.error('Get scan history error:', error);
-    res.status(500).json({ error: 'Failed to retrieve scan history' });
+    // Return a more specific error message
+    res.status(500).json({ 
+      error: 'Failed to retrieve scan history',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };

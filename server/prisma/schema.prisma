@@ -63,6 +63,8 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id])
   userId    Int
   message   String
+  type      String   @default("system")
+  metadata  String?  // JSON string for additional data
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }

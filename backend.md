@@ -1,670 +1,427 @@
-# VulnWatchdog Backend Documentation
+# 🛡️ VulnWatchdog Backend API Documentation
 
 ## Overview
-VulnWatchdog is an automated dependency vulnerability monitoring system with a comprehensive REST API backend built with Node.js, Express, PostgreSQL, and Prisma ORM.
+VulnWatchdog is a vulnerability monitoring system that scans software dependencies for security vulnerabilities and provides real-time notifications.
 
-## 🏗️ Architecture
+**Tech Stack**: Node.js, Express.js, PostgreSQL, Prisma ORM, JWT, SSE, Nodemailer
 
-### Tech Stack
-- **Runtime**: Node.js 18+
-- **Framework**: Express.js
-- **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: JWT (JSON Web Tokens)
-- **File Upload**: Multer
-- **Email**: Nodemailer
-- **Background Jobs**: node-cron
-- **Documentation**: Swagger/OpenAPI
-- **Security**: bcryptjs, helmet, rate limiting
-
-### Project Structure
+## Base URL
 ```
-server/
-├── config/           # Database and environment configuration
-├── controllers/      # Request handlers
-├── middlewares/      # Authentication, authorization, error handling
-├── routes/          # API route definitions
-├── services/        # Business logic
-├── utils/           # Utility functions
-├── jobs/            # Background job schedulers
-├── prisma/          # Database schema and migrations
-├── uploads/         # File upload storage
-├── app.js           # Express app configuration
-├── server.js        # Server entry point
-└── package.json     # Dependencies
+http://localhost:5000/api
 ```
 
-## 🔐 Authentication & Authorization
-
-### JWT Token Structure
-```javascript
-{
-  "id": 1,           // User ID
-  "role": "admin",   // User role (user/admin)
-  "iat": 1234567890  // Issued at timestamp
-}
+## Authentication
+All protected endpoints require JWT token in header:
+```
+Authorization: Bearer YOUR_JWT_TOKEN
 ```
 
-### Authentication Flow
-1. **Register**: `POST /api/auth/register`
-2. **Login**: `POST /api/auth/login` → Returns JWT token
-3. **Use Token**: Include in Authorization header: `Bearer <token>`
+## API Endpoints
 
-### User Roles
-- **user**: Regular user with project management and scanning capabilities
-- **admin**: Full system access including user management and audit logs
-
-## 📊 Database Schema
-
-### Core Models
-
-#### User
-```javascript
-{
-  id: 1,
-  email: "user@example.com",
-  password: "hashed_password",
-  name: "John Doe",
-  role: "user", // "user" or "admin"
-  createdAt: "2024-01-01T00:00:00Z",
-  updatedAt: "2024-01-01T00:00:00Z"
-}
-```
-
-#### Project
-```javascript
-{
-  id: 1,
-  name: "My Project",
-  description: "Project description",
-  userId: 1,
-  createdAt: "2024-01-01T00:00:00Z",
-  updatedAt: "2024-01-01T00:00:00Z"
-}
-```
-
-#### Dependency
-```javascript
-{
-  id: 1,
-  name: "axios",
-  version: "^1.0.0",
-  projectId: 1,
-  createdAt: "2024-01-01T00:00:00Z"
-}
-```
-
-#### Issue
-```javascript
-{
-  id: 1,
-  dependencyId: 1,
-  severity: "HIGH", // LOW, MEDIUM, HIGH, CRITICAL
-  title: "Vulnerability Title",
-  description: "Vulnerability description",
-  cveId: "CVE-2024-1234",
-  createdAt: "2024-01-01T00:00:00Z"
-}
-```
-
-## 🚀 API Endpoints
-
-### Authentication Endpoints
-
-#### Register User
-```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "name": "John Doe",
-  "role": "user" // optional, defaults to "user"
-}
-```
-
-**Response:**
-```javascript
-{
-  "id": 1,
-  "email": "user@example.com",
-  "name": "John Doe",
-  "role": "user"
-}
-```
-
-#### Login
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-**Response:**
-```javascript
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "role": "user"
-}
-```
-
-#### Logout
-```http
-POST /api/auth/logout
-Authorization: Bearer <token>
-```
-
-#### Forgot Password
-```http
-POST /api/auth/forgot
-Content-Type: application/json
-
-{
-  "email": "user@example.com"
-}
-```
+### Authentication
+- `POST /auth/register` - Register user
+- `POST /auth/login` - Login user  
+- `POST /auth/logout` - Logout user
+- `POST /auth/forgot` - Request password reset
 
 ### User Management
+- `GET /user/profile` - Get user profile
+- `PUT /user/profile` - Update user profile
 
-#### Get User Profile
-```http
-GET /api/user/profile
-Authorization: Bearer <token>
-```
+### Projects
+- `POST /project` - Create project
+- `GET /project` - List user projects
+- `GET /project/:id` - Get project details
+- `POST /project/:id/collaborator` - Add collaborator
+- `GET /project/:id/export` - Export project report
 
-**Response:**
-```javascript
+### Vulnerability Scanning
+- `POST /scan` - Upload file and scan (multipart/form-data)
+- `GET /scan/:projectId` - Get scan results
+- `GET /scan/history/:projectId` - Get scan history
+
+### Notifications
+- `GET /notifications` - List notifications
+- `POST /notifications/read` - Mark as read
+- `POST /notifications/read-all` - Mark all as read
+- `GET /notifications/unread-count` - Get unread count
+- `GET /notifications/stream` - Real-time SSE stream
+
+### Alerts
+- `POST /alerts/config` - Set alert configuration
+- `POST /alerts/test` - Send test alert
+
+### Admin (Admin role required)
+- `GET /admin/users` - List all users
+- `GET /admin/projects` - List all projects
+- `GET /admin/logs` - Get system logs
+
+### System
+- `GET /health` - Health check
+- `GET /api/health` - API health check
+
+## Request/Response Examples
+
+### Register User
+```json
+POST /auth/register
 {
-  "id": 1,
   "email": "user@example.com",
-  "name": "John Doe",
-  "role": "user",
-  "emailNotifications": true,
-  "dailyDigest": false,
-  "securityAlerts": true,
-  "alertFrequency": "immediate"
+  "password": "SecurePassword123!",
+  "name": "John Doe"
 }
-```
 
-#### Update User Profile
-```http
-PUT /api/user/profile
-Authorization: Bearer <token>
-Content-Type: application/json
-
+Response:
 {
-  "name": "Updated Name",
-  "emailNotifications": false,
-  "dailyDigest": true,
-  "securityAlerts": true,
-  "alertFrequency": "daily"
-}
-```
-
-### Project Management
-
-#### Create Project
-```http
-POST /api/project
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "name": "My Project",
-  "description": "Project description"
-}
-```
-
-**Response:**
-```javascript
-{
-  "id": 1,
-  "name": "My Project",
-  "description": "Project description",
-  "userId": 1,
-  "createdAt": "2024-01-01T00:00:00Z"
-}
-```
-
-#### List Projects
-```http
-GET /api/project
-Authorization: Bearer <token>
-```
-
-**Response:**
-```javascript
-[
-  {
+  "success": true,
+  "message": "User registered successfully",
+  "user": {
     "id": 1,
-    "name": "My Project",
-    "description": "Project description",
-    "userId": 1,
-    "createdAt": "2024-01-01T00:00:00Z"
+    "email": "user@example.com",
+    "name": "John Doe",
+    "role": "user"
   }
-]
-```
-
-#### Get Project Details
-```http
-GET /api/project/:id
-Authorization: Bearer <token>
-```
-
-#### Add Collaborator
-```http
-POST /api/project/:id/collaborator
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "email": "collaborator@example.com"
 }
 ```
 
-#### Export Project
-```http
-GET /api/project/:id/export
-Authorization: Bearer <token>
+### Login
+```json
+POST /auth/login
+{
+  "email": "user@example.com",
+  "password": "SecurePassword123!"
+}
+
+Response:
+{
+  "success": true,
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "name": "John Doe",
+    "role": "user"
+  }
+}
 ```
 
-### Scanning
+### Create Project
+```json
+POST /project
+Headers: Authorization: Bearer TOKEN
+{
+  "name": "My React App",
+  "description": "A modern React application"
+}
 
-#### Upload and Scan File
-```http
-POST /api/scan
-Authorization: Bearer <token>
+Response:
+{
+  "success": true,
+  "message": "Project created successfully",
+  "project": {
+    "id": 1,
+    "name": "My React App",
+    "description": "A modern React application",
+    "userId": 1,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+### Upload File and Scan
+```javascript
+POST /scan
+Headers: Authorization: Bearer TOKEN
 Content-Type: multipart/form-data
 
-Form Data:
-- file: <dependency_file>
+FormData:
+- file: package.json (or requirements.txt, pom.xml, etc.)
 - projectId: 1
-```
 
-**Supported Files:**
-- `package.json` (Node.js)
-- `requirements.txt` (Python)
-- `pom.xml` (Java/Maven)
-- `Gemfile` (Ruby)
-- `composer.json` (PHP)
-- `go.mod` (Go)
-
-**Response:**
-```javascript
+Response:
 {
+  "success": true,
+  "message": "Scan completed successfully",
   "results": [
     {
-      "dependency": "axios",
-      "version": "^1.0.0",
+      "dependency": {
+        "id": 1,
+        "name": "react",
+        "version": "18.2.0"
+      },
       "vulnerabilities": [
         {
+          "title": "CVE-2023-1234",
           "severity": "HIGH",
-          "title": "Vulnerability Title",
-          "description": "Description",
-          "cveId": "CVE-2024-1234"
+          "description": "Security vulnerability in React",
+          "cveId": "CVE-2023-1234"
         }
-      ]
+      ],
+      "vulnerabilityCount": 1
     }
-  ]
+  ],
+  "summary": {
+    "totalDependencies": 15,
+    "totalVulnerabilities": 3,
+    "criticalVulnerabilities": 1,
+    "scanDate": "2024-01-01T00:00:00.000Z"
+  }
 }
 ```
 
-#### Get Scan Results
-```http
-GET /api/scan/:projectId
-Authorization: Bearer <token>
-```
+### Get Notifications
+```json
+GET /notifications?page=1&limit=10
+Headers: Authorization: Bearer TOKEN
 
-#### Get Scan History
-```http
-GET /api/scan/history/:projectId
-Authorization: Bearer <token>
-```
-
-**Response:**
-```javascript
+Response:
 {
-  "history": [
+  "success": true,
+  "notifications": [
     {
       "id": 1,
-      "projectId": 1,
-      "scanDate": "2024-01-01T00:00:00Z",
-      "totalDependencies": 10,
-      "vulnerabilitiesFound": 3
+      "message": "Critical vulnerability detected in React",
+      "type": "security_alert",
+      "read": false,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "metadata": {
+        "projectId": 1,
+        "projectName": "My React App",
+        "severity": "HIGH"
+      }
     }
-  ]
-}
-```
-
-### Alerts & Notifications
-
-#### Set Alert Configuration
-```http
-POST /api/alerts/config
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "emailNotifications": true,
-  "dailyDigest": false,
-  "securityAlerts": true,
-  "alertFrequency": "immediate"
-}
-```
-
-#### Send Test Alert
-```http
-GET /api/alerts/test
-Authorization: Bearer <token>
-```
-
-#### List Notifications
-```http
-GET /api/notifications
-Authorization: Bearer <token>
-```
-
-**Response:**
-```javascript
-[
-  {
-    "id": 1,
-    "message": "New vulnerability found in axios@^1.0.0",
-    "read": false,
-    "createdAt": "2024-01-01T00:00:00Z"
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 25,
+    "pages": 3
   }
-]
-```
-
-#### Mark Notification as Read
-```http
-POST /api/notifications/read
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "notificationId": 1
 }
 ```
 
-### Admin Endpoints
+## Real-time Notifications (SSE)
 
-#### List All Users (Admin Only)
-```http
-GET /api/admin/users
-Authorization: Bearer <admin_token>
-```
+Connect to `/api/notifications/stream` for real-time updates:
 
-#### List All Projects (Admin Only)
-```http
-GET /api/admin/projects
-Authorization: Bearer <admin_token>
-```
-
-#### Get Audit Logs (Admin Only)
-```http
-GET /api/admin/logs
-Authorization: Bearer <admin_token>
-```
-
-## 🔧 Frontend Integration Guide
-
-### Setup
-
-1. **Install Dependencies**
-```bash
-npm install axios react-router-dom @tanstack/react-query
-```
-
-2. **Configure API Client**
 ```javascript
-// api/client.js
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:5000/api';
-
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 30000,
+const eventSource = new EventSource('/api/notifications/stream', {
+  headers: { 'Authorization': `Bearer ${token}` }
 });
 
-// Request interceptor to add auth token
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  
+  switch (data.type) {
+    case 'notification':
+      // Handle new notification
+      break;
+    case 'unread_count':
+      // Update unread count
+      break;
   }
-  return config;
-});
-
-// Response interceptor to handle auth errors
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
-
-export default apiClient;
+};
 ```
 
-### Authentication Hooks
+## Database Schema
 
+### User
+```sql
+{
+  id: Int (Primary Key)
+  email: String (Unique)
+  password: String (Hashed)
+  name: String
+  role: String (user|admin)
+  emailNotifications: Boolean
+  dailyDigest: Boolean
+  securityAlerts: Boolean
+  alertFrequency: String
+  createdAt: DateTime
+}
+```
+
+### Project
+```sql
+{
+  id: Int (Primary Key)
+  name: String
+  description: String
+  userId: Int (Foreign Key)
+  createdAt: DateTime
+}
+```
+
+### Dependency
+```sql
+{
+  id: Int (Primary Key)
+  name: String
+  version: String
+  projectId: Int (Foreign Key)
+}
+```
+
+### Issue
+```sql
+{
+  id: Int (Primary Key)
+  title: String
+  description: String
+  severity: String (CRITICAL|HIGH|MEDIUM|LOW)
+  dependencyId: Int (Foreign Key)
+  cveId: String
+  createdAt: DateTime
+}
+```
+
+### Notification
+```sql
+{
+  id: Int (Primary Key)
+  message: String
+  type: String
+  metadata: String (JSON)
+  read: Boolean
+  userId: Int (Foreign Key)
+  createdAt: DateTime
+}
+```
+
+## Error Handling
+
+### Standard Error Response
+```json
+{
+  "success": false,
+  "error": "Error message",
+  "details": "Additional details (development only)"
+}
+```
+
+### Common Status Codes
+- 200: Success
+- 201: Created
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 422: Validation Error
+- 429: Rate Limited
+- 500: Internal Server Error
+
+## Frontend Integration Examples
+
+### React Authentication Hook
 ```javascript
-// hooks/useAuth.js
-import { useState, useEffect } from 'react';
-import apiClient from '../api/client';
-
-export const useAuth = () => {
+const useAuth = () => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
   const login = async (email, password) => {
-    try {
-      const response = await apiClient.post('/auth/login', { email, password });
-      const { token, role } = response.data;
-      
-      localStorage.setItem('authToken', token);
-      setUser({ email, role });
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.response?.data?.error };
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      setUser(data.user);
+      setToken(data.token);
+      localStorage.setItem('token', data.token);
     }
-  };
-
-  const register = async (userData) => {
-    try {
-      const response = await apiClient.post('/auth/register', userData);
-      return { success: true, data: response.data };
-    } catch (error) {
-      return { success: false, error: error.response?.data?.error };
-    }
+    
+    return data;
   };
 
   const logout = () => {
-    localStorage.removeItem('authToken');
     setUser(null);
+    setToken(null);
+    localStorage.removeItem('token');
   };
 
-  const checkAuth = async () => {
-    try {
-      const response = await apiClient.get('/user/profile');
-      setUser(response.data);
-    } catch (error) {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
+  return { user, token, login, logout };
+};
+```
+
+### API Client Hook
+```javascript
+const useApi = () => {
+  const apiRequest = async (endpoint, options = {}) => {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`/api${endpoint}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...options.headers
+      },
+      ...options
+    });
+
+    return response.json();
   };
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  return { user, loading, login, register, logout };
+  return { apiRequest };
 };
 ```
 
-### Project Management Hooks
-
+### File Upload Component
 ```javascript
-// hooks/useProjects.js
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import apiClient from '../api/client';
+const FileUpload = ({ projectId, onComplete }) => {
+  const handleUpload = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('projectId', projectId);
 
-export const useProjects = () => {
-  const queryClient = useQueryClient();
+    const token = localStorage.getItem('token');
+    const response = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
 
-  const { data: projects, isLoading } = useQuery({
-    queryKey: ['projects'],
-    queryFn: () => apiClient.get('/project').then(res => res.data),
-  });
-
-  const createProject = useMutation({
-    mutationFn: (projectData) => apiClient.post('/project', projectData),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['projects']);
-    },
-  });
-
-  const getProject = (id) => useQuery({
-    queryKey: ['project', id],
-    queryFn: () => apiClient.get(`/project/${id}`).then(res => res.data),
-    enabled: !!id,
-  });
-
-  return { projects, isLoading, createProject, getProject };
-};
-```
-
-### Scanning Hooks
-
-```javascript
-// hooks/useScan.js
-import { useMutation, useQuery } from '@tanstack/react-query';
-import apiClient from '../api/client';
-
-export const useScan = (projectId) => {
-  const scanFile = useMutation({
-    mutationFn: (file) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('projectId', projectId);
-      return apiClient.post('/scan', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-    },
-  });
-
-  const { data: scanResults } = useQuery({
-    queryKey: ['scan-results', projectId],
-    queryFn: () => apiClient.get(`/scan/${projectId}`).then(res => res.data),
-    enabled: !!projectId,
-  });
-
-  const { data: scanHistory } = useQuery({
-    queryKey: ['scan-history', projectId],
-    queryFn: () => apiClient.get(`/scan/history/${projectId}`).then(res => res.data),
-    enabled: !!projectId,
-  });
-
-  return { scanFile, scanResults, scanHistory };
-};
-```
-
-### React Components Example
-
-```jsx
-// components/LoginForm.jsx
-import { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
-
-export const LoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { login } = useAuth();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const result = await login(email, password);
-    if (result.success) {
-      // Redirect to dashboard
+    const data = await response.json();
+    if (data.success) {
+      onComplete(data);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
-        required
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-        required
-      />
-      <button type="submit">Login</button>
-    </form>
+    <input
+      type="file"
+      accept=".json,.txt,.xml,.lock"
+      onChange={(e) => handleUpload(e.target.files[0])}
+    />
   );
 };
 ```
 
-```jsx
-// components/ProjectList.jsx
-import { useProjects } from '../hooks/useProjects';
+## Environment Variables
 
-export const ProjectList = () => {
-  const { projects, isLoading, createProject } = useProjects();
-
-  if (isLoading) return <div>Loading...</div>;
-
-  return (
-    <div>
-      <h2>Projects</h2>
-      {projects?.map(project => (
-        <div key={project.id}>
-          <h3>{project.name}</h3>
-          <p>{project.description}</p>
-        </div>
-      ))}
-    </div>
-  );
-};
-```
-
-## 🚀 Deployment
-
-### Environment Variables
-```bash
+```env
+# Database
 DATABASE_URL=postgresql://user:password@host:port/database
-JWT_SECRET=your_jwt_secret_key
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_password
-SNYK_TOKEN=your_snyk_api_token
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key
+
+# Email
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-specific-password
+EMAIL_FROM=your-email@gmail.com
+
+# Optional
+NODE_ENV=production
 PORT=5000
-HOST=localhost
 ```
 
-### Production Setup
-1. Set up PostgreSQL database
-2. Configure environment variables
-3. Run database migrations: `npx prisma migrate deploy`
-4. Start server: `npm start`
+## Production Deployment
 
-### Docker Deployment
+### Docker
 ```dockerfile
 FROM node:18-alpine
 WORKDIR /app
@@ -676,50 +433,25 @@ EXPOSE 5000
 CMD ["npm", "start"]
 ```
 
-## 🔒 Security Features
-
-- JWT-based authentication
-- Password hashing with bcrypt
-- Rate limiting on API endpoints
-- Input validation and sanitization
-- CORS configuration
-- Helmet security headers
-- Role-based access control (RBAC)
-- Audit logging for admin actions
-
-## 📈 Performance
-
-- Database connection pooling
-- File upload streaming
-- Background job processing
-- Caching for scan results
-- Optimized database queries
-
-## 🐛 Error Handling
-
-All API endpoints return consistent error responses:
+### PM2
 ```javascript
-{
-  "error": "Error message",
-  "status": 400
-}
+// ecosystem.config.js
+module.exports = {
+  apps: [{
+    name: 'vulnwatchdog-backend',
+    script: 'server.js',
+    instances: 'max',
+    exec_mode: 'cluster',
+    env: { NODE_ENV: 'production', PORT: 5000 }
+  }]
+};
 ```
 
-Common HTTP status codes:
-- `200`: Success
-- `201`: Created
-- `400`: Bad Request
-- `401`: Unauthorized
-- `403`: Forbidden
-- `404`: Not Found
-- `409`: Conflict (e.g., user already exists)
-- `500`: Internal Server Error
+## API Documentation
+- **Swagger UI**: `http://localhost:5000/api/docs`
+- **Health Check**: `GET /health`
 
-## 📚 API Documentation
+## Support
+For issues: Check logs, verify environment variables, test database connectivity, review API documentation.
 
-Interactive API documentation is available at:
-```
-http://localhost:5000/api/docs
-```
-
-This provides a Swagger UI interface for testing all endpoints directly from the browser.
+**Your VulnWatchdog backend is production-ready!** 🎉
