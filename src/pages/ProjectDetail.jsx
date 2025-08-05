@@ -30,12 +30,12 @@ const mockDependencies = [
     currentVersion: "17.0.2",
     latestVersion: "18.2.0",
     isOutdated: true,
-    riskLevel: "medium" as const,
+    riskLevel: "medium",
     vulnerabilities: [
       {
         id: "v1",
         title: "Cross-site Scripting (XSS) vulnerability",
-        severity: "medium" as const,
+        severity: "medium",
         cveId: "CVE-2023-1234",
         description: "A potential XSS vulnerability in React components",
         fixedIn: "18.0.0",
@@ -48,12 +48,12 @@ const mockDependencies = [
     currentVersion: "4.17.20",
     latestVersion: "4.17.21",
     isOutdated: true,
-    riskLevel: "critical" as const,
+    riskLevel: "critical",
     vulnerabilities: [
       {
         id: "v2",
         title: "Prototype Pollution in lodash",
-        severity: "critical" as const,
+        severity: "critical",
         cveId: "CVE-2023-5678",
         description: "Prototype pollution vulnerability in lodash merge function",
         fixedIn: "4.17.21",
@@ -61,7 +61,7 @@ const mockDependencies = [
       {
         id: "v3",
         title: "Command Injection vulnerability",
-        severity: "high" as const,
+        severity: "high",
         cveId: "CVE-2023-9101",
         description: "Potential command injection in template function",
         fixedIn: "4.17.21",
@@ -74,7 +74,7 @@ const mockDependencies = [
     currentVersion: "4.9.5",
     latestVersion: "5.3.2",
     isOutdated: true,
-    riskLevel: "secure" as const,
+    riskLevel: "secure",
     vulnerabilities: [],
   },
 ];
@@ -95,7 +95,7 @@ export default function ProjectDetail() {
     setTimeout(() => setIsScanning(false), 3000);
   };
 
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = (file) => {
     console.log("File uploaded:", file.name);
     handleScan();
   };
