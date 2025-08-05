@@ -18,6 +18,14 @@ async function start() {
   try {
     await prisma.$connect();
     console.log('✅ Connected to DB:', dbUrl);
+    
+    // Initialize background jobs after DB connection
+    const dailyScan = require('./jobs/dailyScan');
+    dailyScan();
+    const alertScheduler = require('./jobs/alertScheduler');
+    alertScheduler();
+    console.log('✅ Background jobs initialized');
+    
   } catch (e) {
     console.error('❌ DB connection failed:', e.message);
   }

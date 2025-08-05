@@ -4,10 +4,6 @@ const dotenv = require('dotenv');
 const errorHandler = require('./middlewares/errorHandler');
 const { apiLimiter, authLimiter, uploadLimiter } = require('./middlewares/rateLimiter');
 const logger = require('./utils/logger');
-const dailyScan = require('./jobs/dailyScan');
-dailyScan();
-const alertScheduler = require('./jobs/alertScheduler');
-alertScheduler();
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
