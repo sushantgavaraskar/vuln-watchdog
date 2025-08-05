@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: vulnwatchdog
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./server
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/vulnwatchdog
+      EMAIL_USER: your_email@gmail.com
+      EMAIL_PASS: your_email_password
+      JWT_SECRET: your_jwt_secret
+      SNYK_TOKEN: your_snyk_api_token_here
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  frontend:
+    build: ./client
+    environment:
+      NEXTAUTH_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

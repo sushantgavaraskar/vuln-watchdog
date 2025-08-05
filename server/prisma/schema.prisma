@@ -1,0 +1,87 @@
+// Prisma schema for VulnWatchdog
+// Data model: Users → Projects → Dependencies → Issues
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("user")
+  projects  Project[]
+  createdAt DateTime @default(now())
+  emailNotifications Boolean? @default(true)
+  dailyDigest Boolean? @default(false)
+  securityAlerts Boolean? @default(true)
+  alertFrequency String? @default("immediate")
+  notifications Notification[]
+  collaborators Collaborator[]
+  auditLogs   AuditLog[]
+}
+
+model Project {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String?
+  user         User          @relation(fields: [userId], references: [id])
+  userId       Int
+  dependencies Dependency[]
+  collaborators Collaborator[]
+  createdAt    DateTime      @default(now())
+}
+
+model Dependency {
+  id         Int      @id @default(autoincrement())
+  name       String
+  version    String
+  project    Project  @relation(fields: [projectId], references: [id])
+  projectId  Int
+  issues     Issue[]
+}
+
+model Issue {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String?
+  severity      String
+  dependency    Dependency @relation(fields: [dependencyId], references: [id])
+  dependencyId  Int
+  cveId         String?
+  createdAt     DateTime  @default(now())
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Collaborator {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId Int
+  role      String   @default("member")
+  invitedAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    Int?
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+}
