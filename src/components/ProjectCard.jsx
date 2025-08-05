@@ -1,30 +1,10 @@
 import { Calendar, Package, AlertTriangle, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { RiskBadge, type RiskLevel } from "./RiskBadge";
+import { RiskBadge } from "./RiskBadge";
 
-interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  lastScan: string;
-  dependencyCount: number;
-  vulnerabilities: {
-    critical: number;
-    high: number;
-    medium: number;
-    low: number;
-  };
-  overallRisk: RiskLevel;
-}
 
-interface ProjectCardProps {
-  project: Project;
-  onView: (id: string) => void;
-  onScan: (id: string) => void;
-}
-
-export function ProjectCard({ project, onView, onScan }: ProjectCardProps) {
+export function ProjectCard({ project, onView, onScan }) {
   const totalVulns = Object.values(project.vulnerabilities).reduce((sum, count) => sum + count, 0);
 
   return (
