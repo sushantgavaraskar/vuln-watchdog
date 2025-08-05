@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:vulnwatchdog_password@postgres:5432/vulnwatchdog
+      - JWT_SECRET=${JWT_SECRET}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - EMAIL_FROM=${EMAIL_FROM}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    volumes:
+      - uploads:/app/uploads
+    networks:
+      - vulnwatchdog-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: vulnwatchdog
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: vulnwatchdog_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - vulnwatchdog-network
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+  uploads:
+
+networks:
+  vulnwatchdog-network:
+    driver: bridge 
