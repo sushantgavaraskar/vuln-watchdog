@@ -23,7 +23,7 @@ const mockProjects = [
     lastScan: "2 hours ago",
     dependencyCount: 245,
     vulnerabilities: { critical: 2, high: 5, medium: 8, low: 3 },
-    overallRisk: "critical" as const,
+    overallRisk: "critical",
   },
   {
     id: "2", 
@@ -32,7 +32,7 @@ const mockProjects = [
     lastScan: "1 day ago",
     dependencyCount: 89,
     vulnerabilities: { critical: 0, high: 1, medium: 3, low: 2 },
-    overallRisk: "medium" as const,
+    overallRisk: "medium",
   },
   {
     id: "3",
@@ -41,7 +41,7 @@ const mockProjects = [
     lastScan: "3 days ago",
     dependencyCount: 156,
     vulnerabilities: { critical: 0, high: 0, medium: 0, low: 0 },
-    overallRisk: "secure" as const,
+    overallRisk: "secure",
   },
 ];
 
@@ -69,11 +69,11 @@ export default function Dashboard() {
     secureProjects: mockProjects.filter(p => p.overallRisk === "secure").length,
   };
 
-  const handleViewProject = (id: string) => {
+  const handleViewProject = (id) => {
     window.location.href = `/project/${id}`;
   };
 
-  const handleScanProject = (id: string) => {
+  const handleScanProject = (id) => {
     console.log("Scan project:", id);
   };
 
