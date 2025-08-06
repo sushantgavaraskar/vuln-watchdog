@@ -1,18 +1,17 @@
-#!/bin/bash
+#!/bin/sh
 
 # Production deployment script for VulnWatchdog Backend
 
-echo "🚀 Starting VulnWatchdog Backend deployment..."
+echo "🚀 Starting VulnWatchdog Backend..."
 
-# Check if DATABASE_URL is set
+# Check if required environment variables are set
 if [ -z "$DATABASE_URL" ]; then
-    echo "❌ Error: DATABASE_URL environment variable is not set"
+    echo "❌ Error: DATABASE_URL is not set"
     exit 1
 fi
 
-# Check if JWT_SECRET is set
 if [ -z "$JWT_SECRET" ]; then
-    echo "❌ Error: JWT_SECRET environment variable is not set"
+    echo "❌ Error: JWT_SECRET is not set"
     exit 1
 fi
 
@@ -27,8 +26,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "✅ Prisma client generated"
-
 # Run database migrations
 echo "🗄️ Running database migrations..."
 npx prisma migrate deploy
@@ -38,11 +35,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "✅ Database migrations completed"
-
 # Create uploads directory if it doesn't exist
+echo "📁 Creating uploads directory..."
 mkdir -p uploads
 
 # Start the application
-echo "🚀 Starting VulnWatchdog Backend..."
-npm start 
+echo "🚀 Starting application..."
+node server.js 
