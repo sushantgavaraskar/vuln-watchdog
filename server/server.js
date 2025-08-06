@@ -1,9 +1,7 @@
 const app = require('./app');
 const prisma = require('./config/db');
 
-const PORT = process.env.PORT || 5000;
-const HOST = process.env.HOST || 'localhost';
-const dbUrl = process.env.DATABASE_URL;
+const PORT = process.env.PORT || 10000; // Render sets PORT
 
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
@@ -17,7 +15,7 @@ process.on('unhandledRejection', (reason, promise) => {
 async function start() {
   try {
     await prisma.$connect();
-    console.log('✅ Connected to DB:', dbUrl);
+    console.log('✅ Connected to DB:', process.env.DATABASE_URL);
     
     // Initialize background jobs after DB connection
     const dailyScan = require('./jobs/dailyScan');
@@ -31,8 +29,8 @@ async function start() {
     console.log('⚠️ Starting server without database connection...');
   }
   
-  app.listen(PORT, HOST, () => {
-    console.log(`Server running at http://${HOST}:${PORT}`);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${PORT}`);
   });
 }
 
