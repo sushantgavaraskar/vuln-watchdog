@@ -6,10 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Shield, Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
 import heroImage from "@/assets/hero-bg.jpg";
 
 export default function Register() {
+  const { register } = useAuth();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,9 +43,10 @@ export default function Register() {
     }
 
     try {
-      // API call would go here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Mock delay
-      console.log("Register attempt:", formData);
+      const success = await register(formData.email, formData.password, formData.name);
+      if (success) {
+        navigate("/dashboard");
+      }
     } catch (err) {
       setError("Registration failed. Please try again.");
     } finally {

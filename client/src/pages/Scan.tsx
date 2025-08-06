@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { MainLayout } from "@/components/layout/main-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,17 +12,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Upload, 
-  FileText, 
-  CheckCircle, 
-  AlertTriangle, 
+import {
+  Upload,
+  FileText,
+  CheckCircle,
+  AlertTriangle,
   Loader2,
   Download,
   Eye,
   RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api";
 
 const supportedFiles = [
   { type: "package.json", ecosystem: "Node.js", icon: "📦" },
@@ -31,13 +32,6 @@ const supportedFiles = [
   { type: "Gemfile", ecosystem: "Ruby", icon: "💎" },
   { type: "composer.json", ecosystem: "PHP", icon: "🐘" },
   { type: "go.mod", ecosystem: "Go", icon: "🐹" }
-];
-
-const mockProjects = [
-  { id: 1, name: "React Dashboard" },
-  { id: 2, name: "API Gateway" },
-  { id: 3, name: "Mobile App" },
-  { id: 4, name: "Data Pipeline" }
 ];
 
 interface ScanResult {
@@ -58,9 +52,30 @@ interface ScanResult {
 
 export default function Scan() {
   const [selectedProject, setSelectedProject] = useState<string>("");
+  const [projects, setProjects] = useState<any[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [scanResults, setScanResults] = useState<ScanResult[]>([]);
   const { toast } = useToast();
+  const [loadingProjects, setLoadingProjects] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setLoadingProjects(true);
+      try {
+        const data = await apiClient.getProjects();
+        setProjects(data);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch projects",
+          variant: "destructive"
+        });
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+    fetchProjects();
+  }, [toast]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -76,13 +91,12 @@ export default function Scan() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFiles(e.dataTransfer.files);
     }
-  }, []);
+  }, [selectedProject]);
 
-  const handleFiles = (files: FileList) => {
+  const handleFiles = async (files: FileList) => {
     if (!selectedProject) {
       toast({
         title: "Error",
@@ -91,51 +105,45 @@ export default function Scan() {
       });
       return;
     }
-
-    Array.from(files).forEach((file) => {
+    Array.from(files).forEach(async (file) => {
       const scanResult: ScanResult = {
         id: Date.now() + Math.random().toString(),
         fileName: file.name,
         status: "scanning",
         progress: 0
       };
-
       setScanResults(prev => [scanResult, ...prev]);
-
-      // Simulate scan progress
-      const interval = setInterval(() => {
-        setScanResults(prev => prev.map(result => {
-          if (result.id === scanResult.id) {
-            const newProgress = Math.min(result.progress + Math.random() * 20, 100);
-            
-            if (newProgress >= 100) {
-              clearInterval(interval);
-              return {
-                ...result,
+      try {
+        // Upload and scan via backend
+        const result = await apiClient.uploadAndScan(selectedProject, file);
+        setScanResults(prev => prev.map(r =>
+          r.id === scanResult.id
+            ? {
+                ...r,
                 status: "completed",
                 progress: 100,
-                vulnerabilities: {
-                  critical: Math.floor(Math.random() * 3),
-                  high: Math.floor(Math.random() * 8),
-                  medium: Math.floor(Math.random() * 15),
-                  low: Math.floor(Math.random() * 10),
-                  total: Math.floor(Math.random() * 30)
-                },
-                dependencies: Math.floor(Math.random() * 200) + 50,
+                vulnerabilities: result.vulnerabilities,
+                dependencies: result.dependencies,
                 scanTime: new Date().toLocaleString()
-              };
-            }
-            
-            return { ...result, progress: newProgress };
-          }
-          return result;
-        }));
-      }, 500);
-    });
-
-    toast({
-      title: "Scan Started",
-      description: `Started scanning ${files.length} file(s)`
+              }
+            : r
+        ));
+        toast({
+          title: "Scan Complete",
+          description: `Scan completed for ${file.name}`
+        });
+      } catch (error) {
+        setScanResults(prev => prev.map(r =>
+          r.id === scanResult.id
+            ? { ...r, status: "error", progress: 100 }
+            : r
+        ));
+        toast({
+          title: "Scan Failed",
+          description: `Failed to scan ${file.name}`,
+          variant: "destructive"
+        });
+      }
     });
   };
 
@@ -164,7 +172,6 @@ export default function Scan() {
             Upload dependency files to scan for security vulnerabilities
           </p>
         </div>
-
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Upload Section */}
           <div className="lg:col-span-2 space-y-6">
@@ -177,12 +184,12 @@ export default function Scan() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Select value={selectedProject} onValueChange={setSelectedProject}>
+                <Select value={selectedProject} onValueChange={setSelectedProject} disabled={loadingProjects}>
                   <SelectTrigger className="bg-background border-security">
-                    <SelectValue placeholder="Select a project" />
+                    <SelectValue placeholder={loadingProjects ? "Loading projects..." : "Select a project"} />
                   </SelectTrigger>
                   <SelectContent className="bg-gradient-card border-security">
-                    {mockProjects.map((project) => (
+                    {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id.toString()}>
                         {project.name}
                       </SelectItem>
@@ -191,7 +198,6 @@ export default function Scan() {
                 </Select>
               </CardContent>
             </Card>
-
             {/* File Upload */}
             <Card className="bg-gradient-card border-security">
               <CardHeader>
@@ -219,7 +225,6 @@ export default function Scan() {
                   <p className="text-muted-foreground mb-4">
                     Maximum file size: 5MB
                   </p>
-                  
                   <input
                     type="file"
                     multiple
@@ -228,7 +233,6 @@ export default function Scan() {
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     disabled={!selectedProject}
                   />
-                  
                   <Button 
                     variant="outline" 
                     disabled={!selectedProject}
@@ -237,7 +241,6 @@ export default function Scan() {
                     <Upload className="mr-2 h-4 w-4" />
                     Choose Files
                   </Button>
-                  
                   {!selectedProject && (
                     <p className="text-sm text-destructive mt-2">
                       Please select a project first
@@ -246,7 +249,6 @@ export default function Scan() {
                 </div>
               </CardContent>
             </Card>
-
             {/* Scan Results */}
             {scanResults.length > 0 && (
               <Card className="bg-gradient-card border-security">
@@ -259,7 +261,6 @@ export default function Scan() {
                 <CardContent className="space-y-4">
                   {scanResults.map((result) => {
                     const risk = getRiskLevel(result.vulnerabilities);
-                    
                     return (
                       <div key={result.id} className="border border-security rounded-lg p-4 bg-background/50">
                         <div className="flex items-center justify-between mb-3">
@@ -270,7 +271,6 @@ export default function Scan() {
                               <SeverityBadge severity={risk.level as any} />
                             )}
                           </div>
-                          
                           <div className="flex items-center space-x-2">
                             {result.status === "scanning" && (
                               <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -287,7 +287,6 @@ export default function Scan() {
                             )}
                           </div>
                         </div>
-
                         {result.status === "scanning" && (
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
@@ -297,7 +296,6 @@ export default function Scan() {
                             <Progress value={result.progress} className="h-2" />
                           </div>
                         )}
-
                         {result.status === "completed" && result.vulnerabilities && (
                           <div className="space-y-3">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
@@ -318,7 +316,6 @@ export default function Scan() {
                                 <div className="text-muted-foreground">Low</div>
                               </div>
                             </div>
-                            
                             <div className="flex justify-between text-sm text-muted-foreground">
                               <span>{result.dependencies} dependencies scanned</span>
                               <span>Completed at {result.scanTime}</span>
@@ -332,7 +329,6 @@ export default function Scan() {
               </Card>
             )}
           </div>
-
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Supported Files */}
@@ -355,7 +351,6 @@ export default function Scan() {
                 ))}
               </CardContent>
             </Card>
-
             {/* Quick Actions */}
             <Card className="bg-gradient-card border-security">
               <CardHeader>

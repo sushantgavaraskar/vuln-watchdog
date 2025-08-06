@@ -5,7 +5,23 @@ exports.register = async (req, res) => {
   try {
     const { email, password, name, role } = req.body;
     const user = await authService.register({ email, password, name, role });
-    res.json({ id: user.id, email: user.email });
+    
+    // Generate JWT token for the new user
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign(
+      { id: user.id, role: user.role || 'user' }, 
+      process.env.JWT_SECRET || 'devsecret'
+    );
+    
+    res.json({ 
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role || 'user'
+      }
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

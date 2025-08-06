@@ -5,10 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield, Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
 import heroImage from "@/assets/hero-bg.jpg";
 
 export default function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,11 +26,14 @@ export default function Login() {
     setError("");
 
     try {
-      // API call would go here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Mock delay
-      console.log("Login attempt:", formData);
+      const success = await login(formData.email, formData.password);
+      if (success) {
+        navigate("/dashboard");
+      } else {
+        setError("Invalid email or password");
+      }
     } catch (err) {
-      setError("Invalid email or password");
+      setError("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

@@ -59,6 +59,13 @@ class ApiClient {
     return this.request('/auth/logout', { method: 'POST' });
   }
 
+  async forgotPassword(email: string) {
+    return this.request('/auth/forgot', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+  }
+
   // User Management
   async getUserProfile() {
     return this.request<any>('/user/profile');
