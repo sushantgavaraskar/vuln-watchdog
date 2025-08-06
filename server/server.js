@@ -28,7 +28,9 @@ async function start() {
     
   } catch (e) {
     console.error('❌ DB connection failed:', e.message);
+    console.log('⚠️ Starting server without database connection...');
   }
+  
   app.listen(PORT, HOST, () => {
     console.log(`Server running at http://${HOST}:${PORT}`);
   });
