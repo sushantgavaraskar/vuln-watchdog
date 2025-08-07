@@ -43,10 +43,9 @@ export const useNotifications = () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const eventSource = new EventSource(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications/stream`, {
-      // Note: EventSource doesn't support custom headers, so we might need to pass token as query param
-      // or use WebSocket for authentication
-    });
+    // Use token as query param for SSE
+    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+    const eventSource = new EventSource(url);
     
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);

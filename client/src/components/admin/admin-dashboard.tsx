@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatsCard } from "@/components/dashboard/stats-card";
-import { apiClient } from "@/lib/api";
+import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Users, 
@@ -46,8 +46,24 @@ export function AdminDashboard() {
           apiClient.getUsers(),
           apiClient.getAdminProjects()
         ]);
-        setUsers(usersData as AdminUser[]);
-        setProjects(projectsData as AdminProject[]);
+        // Map usersData to AdminUser[]
+        setUsers((usersData as any[]).map(user => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          createdAt: user.createdAt,
+          projectCount: user.projectCount ?? 0 // fallback if missing
+        })));
+        // Map projectsData to AdminProject[]
+        setProjects((projectsData as any[]).map(project => ({
+          id: project.id,
+          name: project.name,
+          description: project.description,
+          owner: project.owner ?? '',
+          vulnerabilities: project.vulnerabilities ?? 0,
+          lastScan: project.lastScan ?? ''
+        })));
       } catch (error) {
         toast({
           title: "Failed to load admin data",

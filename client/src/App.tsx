@@ -4,19 +4,17 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/use-auth";
-import { ProtectedRoute } from "@/components/auth/protected-route";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Projects from "./pages/Projects";
 import Scan from "./pages/Scan";
-import Vulnerabilities from "./pages/Vulnerabilities";
+// import Vulnerabilities from "./pages/Vulnerabilities";
 import Notifications from "./pages/Notifications";
-import AdminDashboard from "./pages/AdminDashboard";
-import UserProfile from "./pages/UserProfile";
-import AlertsConfig from "./pages/AlertsConfig";
+// import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
+import Vulnerabilities from "./pages/Vulnerabilities";
 
 const queryClient = new QueryClient();
 
@@ -29,53 +27,14 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            
-            {/* Protected Routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/projects" element={
-              <ProtectedRoute>
-                <Projects />
-              </ProtectedRoute>
-            } />
-            <Route path="/scan" element={
-              <ProtectedRoute>
-                <Scan />
-              </ProtectedRoute>
-            } />
-            <Route path="/vulnerabilities" element={
-              <ProtectedRoute>
-                <Vulnerabilities />
-              </ProtectedRoute>
-            } />
-            <Route path="/notifications" element={
-              <ProtectedRoute>
-                <Notifications />
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <UserProfile />
-              </ProtectedRoute>
-            } />
-            <Route path="/alerts-config" element={
-              <ProtectedRoute>
-                <AlertsConfig />
-              </ProtectedRoute>
-            } />
-            
-            {/* Admin Routes */}
-            <Route path="/admin" element={
-              <ProtectedRoute adminOnly>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/scan" element={<Scan />} />
+            <Route path="/vulnerabilities" element={<Vulnerabilities />} /> 
+            <Route path="/notifications" element={<Notifications />} />
+            {/* <Route path="/analytics" element={<Analytics />} /> */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// DEPRECATED: Use api-client.ts for all API calls. This file is kept for legacy support.
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'; // Updated to match backend default
 
 interface ApiResponse<T = any> {
   data?: T;
