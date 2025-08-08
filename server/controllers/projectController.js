@@ -14,7 +14,14 @@ exports.createProject = async (req, res) => {
 exports.getProjects = async (req, res) => {
   try {
     const userId = req.user.id;
-    const projects = await prisma.project.findMany({ where: { userId } });
+    // Include dependencies and their issues so the frontend dashboard can compute stats
+    const projects = await prisma.project.findMany({ 
+      where: { userId },
+      include: { 
+        dependencies: { include: { issues: true } },
+        collaborators: true
+      }
+    });
     res.json(projects);
   } catch (e) {
     res.status(500).json({ error: e.message });

@@ -5,21 +5,23 @@ exports.register = async (req, res) => {
   try {
     const { email, password, name, role } = req.body;
     const user = await authService.register({ email, password, name, role });
-    
-    // Generate JWT token for the new user
     const jwt = require('jsonwebtoken');
     const token = jwt.sign(
-      { id: user.id, role: user.role || 'user' }, 
+      { userId: user.id, email: user.email, role: user.role || 'user' },
       process.env.JWT_SECRET || 'devsecret'
     );
-    
-    res.json({ 
+    res.json({
       token,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role || 'user'
+        role: user.role || 'user',
+        emailNotifications: !!user.emailNotifications,
+        dailyDigest: !!user.dailyDigest,
+        securityAlerts: !!user.securityAlerts,
+        alertFrequency: user.alertFrequency || 'immediate',
+        createdAt: user.createdAt
       }
     });
   } catch (e) {

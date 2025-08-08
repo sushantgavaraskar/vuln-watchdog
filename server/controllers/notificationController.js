@@ -131,7 +131,7 @@ exports.getUnreadCount = async (req, res) => {
   try {
     const userId = req.user.id;
     const count = await NotificationService.getUnreadCount(userId);
-    res.json({ unreadCount: count });
+    res.json({ count });
   } catch (error) {
     console.error('Error getting unread count:', error);
     res.status(500).json({ error: 'Failed to get unread count' });
