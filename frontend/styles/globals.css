@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #__next { height: 100%; }
+.btn { @apply px-3 py-2 rounded border border-gray-300 bg-white hover:bg-gray-50; }
+.input { @apply px-3 py-2 rounded border border-gray-300 w-full; }
+.card { @apply border rounded p-4 bg-white; }
+
+

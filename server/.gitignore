@@ -196,3 +196,4 @@ Dockerfile.prod
 
 # PM2
 .pm2/ 
+package-lock.json
