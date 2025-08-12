@@ -7,9 +7,7 @@
     font-family: system-ui, sans-serif;
   }
   
-  body {
-    @apply bg-gray-50 text-gray-900;
-  }
+  /* Body styles moved to layout body className to avoid @apply issues during build */
 }
 
 @layer components {

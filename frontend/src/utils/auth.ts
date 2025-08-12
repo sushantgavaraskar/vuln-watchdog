@@ -1,39 +1,40 @@
 import { User } from '@/types';
+import { config } from './config';
 
 // JWT token management
 export const getToken = (): string | null => {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('vulnwatchdog_token');
+  return localStorage.getItem(config.auth.jwtStorageKey);
 };
 
 export const setToken = (token: string): void => {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('vulnwatchdog_token', token);
+  localStorage.setItem(config.auth.jwtStorageKey, token);
 };
 
 export const removeToken = (): void => {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem('vulnwatchdog_token');
+  localStorage.removeItem(config.auth.jwtStorageKey);
 };
 
 export const getUser = (): User | null => {
   if (typeof window === 'undefined') return null;
-  const userStr = localStorage.getItem('vulnwatchdog_user');
+  const userStr = localStorage.getItem(config.auth.userStorageKey);
   return userStr ? JSON.parse(userStr) : null;
 };
 
 export const setUser = (user: User): void => {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('vulnwatchdog_user', JSON.stringify(user));
+  localStorage.setItem(config.auth.userStorageKey, JSON.stringify(user));
 };
 
 export const removeUser = (): void => {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem('vulnwatchdog_user');
+  localStorage.removeItem(config.auth.userStorageKey);
 };
 
 // JWT parsing (basic implementation)
-export const parseJWT = (token: string): any => {
+export const parseJWT = (token: string): unknown => {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -50,7 +51,7 @@ export const parseJWT = (token: string): any => {
 };
 
 export const isTokenExpired = (token: string): boolean => {
-  const decoded = parseJWT(token);
+  const decoded = parseJWT(token) as { exp?: number } | null;
   if (!decoded || !decoded.exp) return true;
   return Date.now() >= decoded.exp * 1000;
 };

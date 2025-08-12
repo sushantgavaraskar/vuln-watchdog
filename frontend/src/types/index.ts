@@ -58,7 +58,7 @@ export interface Notification {
   id: number;
   message: string;
   type: 'system' | 'security' | 'scan' | 'collaboration';
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   read: boolean;
   userId: number;
   createdAt: string;

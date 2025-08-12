@@ -7,7 +7,7 @@ import { config } from '@/utils/config';
 interface APITestResult {
   endpoint: string;
   status: 'pending' | 'success' | 'error' | 'warning';
-  response?: any;
+  response?: unknown;
   error?: string;
   duration?: number;
 }
@@ -18,7 +18,7 @@ interface APITest {
   endpoint: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   requiresAuth?: boolean;
-  testData?: any;
+  testData?: Record<string, unknown>;
   icon: React.ComponentType<any>;
 }
 
@@ -63,23 +63,15 @@ const API_TESTS: APITest[] = [
   {
     name: 'Projects List',
     description: 'Test projects listing endpoint',
-    endpoint: '/api/projects',
+    endpoint: '/api/project',
     method: 'GET',
     requiresAuth: true,
     icon: Database,
   },
   {
-    name: 'Vulnerabilities List',
-    description: 'Test vulnerabilities listing endpoint',
-    endpoint: '/api/vulnerabilities/list',
-    method: 'GET',
-    requiresAuth: true,
-    icon: AlertTriangle,
-  },
-  {
     name: 'Notifications List',
     description: 'Test notifications listing endpoint',
-    endpoint: '/api/notifications/list',
+    endpoint: '/api/notifications',
     method: 'GET',
     requiresAuth: true,
     icon: Bell,
@@ -128,7 +120,7 @@ export default function APITester() {
     };
 
     try {
-      const url = `${config.api.baseUrl}${test.endpoint}`;
+      const url = `${config.api.baseUrl}${test.endpoint.replace(/^\/?api\//, '/')}`;
       const options: RequestInit = {
         method: test.method,
         headers: {
@@ -174,7 +166,7 @@ export default function APITester() {
         const duration = Date.now() - startTime;
         
         if (response.ok) {
-          let data;
+      let data: unknown;
           try {
             data = await response.json();
           } catch {

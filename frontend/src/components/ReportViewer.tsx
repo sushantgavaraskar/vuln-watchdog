@@ -5,7 +5,7 @@ import { Download, Copy, Check, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ReportViewerProps {
-  data: any;
+  data: unknown;
   title?: string;
   filename?: string;
 }
@@ -18,7 +18,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const formatJSON = (data: any): string => {
+  const formatJSON = (data: unknown): string => {
     try {
       return JSON.stringify(data, null, 2);
     } catch (error) {

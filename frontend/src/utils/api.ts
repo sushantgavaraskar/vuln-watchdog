@@ -1,11 +1,12 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { getToken, clearAuth } from './auth';
 import { ApiResponse } from '@/types';
+import { config } from './config';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
-  baseURL: 'https://vuln-watchdog-1.onrender.com/api',
-  timeout: 30000,
+  baseURL: config.api.baseUrl,
+  timeout: config.error.apiTimeout || 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -33,7 +34,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       clearAuth();
-      window.location.href = '/login';
+      window.location.href = '/auth/login';
     }
     return Promise.reject(error);
   }

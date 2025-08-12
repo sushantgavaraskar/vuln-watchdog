@@ -44,9 +44,13 @@ export default function UploadPage() {
       // Refresh projects to get updated data
       await fetchProjects();
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload failed:', error);
-      toast.error(error.response?.data?.error || 'Upload failed');
+      const message = typeof error === 'object' && error && 'response' in error 
+        ? // @ts-expect-error narrow axios-like error shape
+          (error.response?.data?.error ?? 'Upload failed')
+        : 'Upload failed';
+      toast.error(message);
     } finally {
       setUploading(false);
     }

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from '@/types';
 import { getToken, setToken, removeToken, getUser, setUser, removeUser, isAuthenticated } from '@/utils/auth';
-import { authAPI } from '@/utils/api';
+import { authAPI, userAPI } from '@/utils/api';
 
 interface AuthContextType {
   user: User | null;
@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           } else {
             // Token exists but no user data, try to fetch user profile
             try {
-              const userData = await authAPI.getProfile();
+              const userData = await userAPI.getProfile();
               setUserState(userData);
               setUser(userData);
             } catch (error) {
@@ -75,7 +75,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUserState(response.user);
       
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage = error.response?.data?.error || 'Login failed';
       return { success: false, error: errorMessage };
     } finally {
@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUserState(response.user);
       
       return { success: true };
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage = error.response?.data?.error || 'Registration failed';
       return { success: false, error: errorMessage };
     } finally {

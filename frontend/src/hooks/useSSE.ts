@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { getToken } from '@/utils/auth';
 import { SSEEvent } from '@/types';
+import { config } from '@/utils/config';
 
 interface UseSSEOptions {
   endpoint: string;
@@ -41,12 +42,9 @@ export const useSSE = ({
     }
 
     try {
-      const url = `https://vuln-watchdog-1.onrender.com/api${endpoint}`;
-      const eventSource = new EventSource(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      } as any);
+      const base = config.api.baseUrl.replace(/\/?api\/?$/, '/api');
+      const url = `${base}${endpoint}${endpoint.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
+      const eventSource = new EventSource(url);
 
       eventSource.onopen = () => {
         setIsConnected(true);

@@ -90,7 +90,7 @@ export default function DashboardPage() {
   }: {
     title: string;
     value: number;
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     color: string;
     trend?: string;
   }) => (
