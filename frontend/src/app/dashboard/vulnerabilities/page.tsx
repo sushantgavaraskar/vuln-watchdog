@@ -12,7 +12,7 @@ export default function VulnerabilitiesPage() {
   const [filteredVulnerabilities, setFilteredVulnerabilities] = useState<Array<{
     issue: Issue;
     project: Project;
-    dependency: any;
+    dependency: { id: number; name: string; version: string; issues: Issue[] };
   }>>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -45,7 +45,7 @@ export default function VulnerabilitiesPage() {
     let vulnerabilities: Array<{
       issue: Issue;
       project: Project;
-      dependency: any;
+      dependency: { id: number; name: string; version: string; issues: Issue[] };
     }> = [];
 
     // Collect all vulnerabilities from all projects

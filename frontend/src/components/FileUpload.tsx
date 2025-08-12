@@ -122,9 +122,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         setUploadStatus('idle');
       }, 2000);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       setUploadStatus('error');
-      setError(err.message || 'Upload failed');
+      const message = typeof err === 'object' && err && 'message' in err ? String((err as { message?: string }).message) : 'Upload failed';
+      setError(message);
     }
   };
 
@@ -145,7 +146,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         <select
           id="project"
           value={selectedProjectId}
-          onChange={(e) => setSelectedProjectId(e.target.value)}
+          onChange={(e) => setSelectedProjectId(e.target.value === '' ? '' : Number(e.target.value))}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
         >
           <option value="">Choose a project...</option>

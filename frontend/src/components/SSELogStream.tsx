@@ -20,9 +20,8 @@ export const SSELogStream: React.FC<SSELogStreamProps> = ({
   const { isConnected, error } = useSSE({
     endpoint,
     onMessage: (event) => {
-      if (event.type === 'new_log' && event.log) {
-        setLogs(prev => [event.log as AuditLog, ...prev.slice(0, 99)]); // Keep last 100 logs
-      }
+      // No matching 'new_log' SSE type in our SSEEvent. Keep placeholder for future mapping if backend emits admin logs via SSE.
+      return;
     },
     onError: (error) => {
       console.error('SSE Error:', error);

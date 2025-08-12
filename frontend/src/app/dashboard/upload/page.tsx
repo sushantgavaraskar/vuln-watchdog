@@ -186,7 +186,7 @@ export default function UploadPage() {
                 <li>• Ensure your dependency file is up to date</li>
                 <li>• For best results, include lock files when available</li>
                 <li>• Scans typically complete within 30-60 seconds</li>
-                <li>• You'll receive notifications for any vulnerabilities found</li>
+              <li>• You&#39;ll receive notifications for any vulnerabilities found</li>
               </ul>
             </div>
           </div>

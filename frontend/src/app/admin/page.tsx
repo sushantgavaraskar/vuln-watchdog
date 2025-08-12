@@ -60,8 +60,8 @@ export default function AdminDashboardPage() {
       setRecentLogs(logs.slice(0, 10));
 
       // Calculate statistics
-      const totalVulns = projects.reduce((acc, project) => acc + project.totalVulnerabilities, 0);
-      const criticalVulns = projects.reduce((acc, project) => {
+      const totalVulns = projects.reduce((acc: number, project: AdminProject) => acc + project.totalVulnerabilities, 0);
+      const criticalVulns = projects.reduce((acc: number, project: AdminProject) => {
         // This would need to be calculated from actual vulnerability data
         return acc + Math.floor(project.totalVulnerabilities * 0.1); // Estimate 10% critical
       }, 0);

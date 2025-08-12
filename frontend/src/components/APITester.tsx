@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Shield, CheckCircle, XCircle, AlertTriangle, Loader2, Zap, Database, Users, Bell, FileText, Settings } from 'lucide-react';
 import { config } from '@/utils/config';
 
@@ -19,7 +19,7 @@ interface APITest {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   requiresAuth?: boolean;
   testData?: Record<string, unknown>;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const API_TESTS: APITest[] = [
@@ -385,7 +385,7 @@ export default function APITester() {
                       </div>
                     )}
                     
-                    {result?.response && (
+                    {typeof result?.response !== 'undefined' && (
                       <div className="mt-2">
                         <details className="text-sm">
                           <summary className="cursor-pointer text-blue-600 hover:text-blue-800">
@@ -428,7 +428,7 @@ export default function APITester() {
               <li>• Some endpoints are working. Focus on fixing the failed endpoints first.</li>
             )}
             <li>• Authentication-required endpoints showing 401 errors are expected when not logged in.</li>
-            <li>• Check the browser's Network tab for detailed request/response information.</li>
+            <li>• Check the browser&#39;s Network tab for detailed request/response information.</li>
           </ul>
         </div>
       )}

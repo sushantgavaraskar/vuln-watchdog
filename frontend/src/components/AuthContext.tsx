@@ -76,8 +76,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       return { success: true };
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Login failed';
-      return { success: false, error: errorMessage };
+      let message = 'Login failed';
+      if (typeof error === 'object' && error && 'response' in error) {
+        const resp = (error as { response?: { data?: { error?: string } } }).response;
+        message = resp?.data?.error ?? message;
+      }
+      return { success: false, error: message };
     } finally {
       setLoading(false);
     }
@@ -94,8 +98,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       return { success: true };
     } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Registration failed';
-      return { success: false, error: errorMessage };
+      let message = 'Registration failed';
+      if (typeof error === 'object' && error && 'response' in error) {
+        const resp = (error as { response?: { data?: { error?: string } } }).response;
+        message = resp?.data?.error ?? message;
+      }
+      return { success: false, error: message };
     } finally {
       setLoading(false);
     }
